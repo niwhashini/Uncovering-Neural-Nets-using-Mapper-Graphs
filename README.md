@@ -12,9 +12,23 @@ The project is organized into **two complementary parts**, both aimed at uncover
 
 The central idea is to study **how information is organized topologically**—across *layers* and *architectures*—using Kepler Mapper.
 
+This repository includes an additional exploratory study on the **Mapper algorithm**, using **Kepler Mapper** applied to **COVID-19 data**, along with a custom **D3-based visualization** pipeline.
+
 ---
 
 ## Project structure
+
+### Part 0 — Covid-19 Dataset Visualization
+To study the behavior of the Mapper algorithm in practice, we apply Kepler Mapper to COVID-19 case data from 9 U.S. states over a six-month period.  
+The resulting Mapper graph is visualized using D3 to enable interactive inspection and trend analysis.
+
+#### D3-based Viewer Features:
+- Toggle node coloring by:
+  - dominant state
+  - average number of confirmed cases
+- Interactive pie chart showing node composition
+- Side panel displaying detailed node statistics
+
 
 ### Part I — QFormer: Mapper graphs through neural network layers
 
