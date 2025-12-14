@@ -116,27 +116,3 @@ The D3-based viewer allows:
 ```bash
 python -m http.server 8000
 
-5) Run end-to-end
-Install
-pip install -r requirements.txt
-
-Generate dataset (optional)
-python synthetic_ts_plot.py
-
-Generate all Mapper JSONs
-python synthetic_mapper_pipeline.py --out synthetic_mapper_pca_umap.json
-python lstm_mapper_pipeline.py --out mapper_lstm.json
-python dcvae_mapper_pipeline.py --out mapper_vae.json
-python trans_mapper_pipeline.py --out mapper_transf.json
-
-View locally
-
-Because the viewer fetches JSON files, run a local server:
-
-python -m http.server 8000
-
-
-Open:
-
-http://localhost:8000/viewer.html
-
