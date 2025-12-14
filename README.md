@@ -43,6 +43,10 @@ Given a single neural network we:
 **Goal:**  
 Understand how neural networks progressively reshape information as it flows through layers.
 
+
+**Note:**  
+QFormer query tensors from all layers are excluded from this repository due to their large size (~2.07 GB).
+
 ---
 
 ### Part II — Time Series: Mapper graphs across architectures
