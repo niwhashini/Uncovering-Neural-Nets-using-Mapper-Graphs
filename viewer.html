@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Synthetic Mapper Viewer</title>
+  <style>
+    :root {
+      /* Dark navy theme */
+      --bg-main: #020617;      
+      --bg-panel: #02081f;     
+      --border-subtle: #1e293b;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --accent: #3b82f6;
+      --accent-soft: #1d4ed8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    #sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-subtle);
+      padding: 16px 14px;
+      overflow-y: auto;
+    }
+
+    #sidebar h1 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    .panel {
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: #020a25;
+      padding: 10px 10px 8px;
+      margin-bottom: 10px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    #modelTabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .model-tab {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 11px;
+      text-align: center;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .model-tab.active {
+      background: var(--accent);
+      color: #0b1120;
+      border-color: var(--accent-soft);
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      margin-top: 6px;
+    }
+
+    select, input[type="range"], button {
+      width: 100%;
+      font-size: 12px;
+    }
+
+    select {
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+      color: var(--text-main);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: #0f172a;
+      outline: none;
+      margin-top: 2px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 1px solid var(--accent-soft);
+      cursor: pointer;
+    }
+
+    button {
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: var(--accent-soft);
+      background: #021027;
+    }
+
+    #graphStats {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    #selectedSummary {
+      font-size: 11px;
+      color: var(--text-main);
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    #selectedComposition {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    #selectedComposition .comp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    #selectedComposition .comp-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #selectedComposition .comp-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      border: 1px solid #020617;
+    }
+
+    #selectedComposition .comp-val {
+      font-variant-numeric: tabular-nums;
+    }
+
+    #mainSVG {
+      position: absolute;
+      left: 280px;
+      top: 0;
+      width: calc(100vw - 280px);
+      height: calc(100vh - 120px);
+      background: #020617; 
+    }
+
+    #timelineContainer {
+      position: absolute;
+      bottom: 80px;
+      left: 280px;
+      width: calc(100vw - 280px);
+      height: 40px;
+      background: #020617;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+    }
+
+    #traceContainer {
+      position: absolute;
+      bottom: 40px;
+      left: 280px;
+      width: calc(100vw - 280px);
+      height: 40px;
+      background: #020617;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+    }
+
+    #legendBar {
+      position: absolute;
+      bottom: 0;
+      left: 280px;
+      width: calc(100vw - 280px);
+      height: 40px;
+      background: #020617;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-left: 16px;
+      font-size: 12px;
+      color: var(--text-main);
+    }
+
+    .legendItem {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legendSwatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid #020617;
+    }
+
+    .node.selected circle {
+      stroke: #facc15 !important;
+      stroke-width: 2px !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>Synthetic Mapper</h1>
+
+  <div id="modelTabs">
+    <div class="model-tab active" data-json="synthetic_mapper_pca_umap.json">Synthetic</div>
+    <div class="model-tab" data-json="mapper_lstm.json">LSTM</div>
+    <div class="model-tab" data-json="mapper_vae.json">VAE</div>
+    <div class="model-tab" data-json="mapper_transf.json">Transformer</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Controls</div>
+
+    <label for="lensSelect">Lens</label>
+    <select id="lensSelect">
+      <option value="pca">PCA</option>
+      <option value="umap">UMAP</option>
+    </select>
+
+    <label for="colorSelect" style="margin-top:8px;">Color mode</label>
+    <select id="colorSelect">
+      <option value="anomaly_fraction">Anomaly fraction</option>
+      <option value="dominant_type">Anomaly type</option>
+      <option value="dominant_channel">Dominant channel</option>
+      <option value="reconstruction_error">Reconstruction error</option>
+    </select>
+
+    <label for="edgeWidthSlider" style="margin-top:8px;">Edge width</label>
+    <input id="edgeWidthSlider" type="range" min="0.5" max="6" step="0.2" value="2.4">
+
+    <label for="nodeSizeSlider" style="margin-top:8px;">Node scale</label>
+    <input id="nodeSizeSlider" type="range" min="0.6" max="3" step="0.1" value="1.4">
+
+    <label style="margin-top:10px;">Animation</label>
+    <button id="playBtn">Play</button>
+    <input id="stepSlider" type="range" min="0" max="100" value="0">
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Graph</div>
+    <div id="graphStats"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Selected node</div>
+    <div id="selectedSummary">Click a node in the graph to inspect its anomaly composition.</div>
+    <div id="selectedComposition"></div>
+  </div>
+</div>
+
+<svg id="mainSVG"></svg>
+
+<div id="traceContainer">
+  <svg id="traceSVG" width="700" height="40"></svg>
+</div>
+
+<div id="legendBar"></div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="viewer.js"></script>
+</body>
+</html>
+
