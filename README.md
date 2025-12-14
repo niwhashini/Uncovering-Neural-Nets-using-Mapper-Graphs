@@ -1,19 +1,51 @@
+
 # Uncovering Neural Networks using Mapper Graphs
 
-> **Visualizing latent structure in time-series representation learning using Topological Data Analysis**
+> Visualizing latent structure across **neural layers and architectures** using Topological Data Analysis
 
 ---
 
 ## Overview
 
-This repository presents an **end-to-end framework** for:
-1. generating **synthetic multivariate time-series with controlled anomalies**,  
-2. learning **latent representations** using neural autoencoders, and  
-3. analyzing and comparing these representations via **Kepler Mapper graphs**.
+This repository presents a research framework for **interpreting neural networks using Mapper graphs**.  
+The project is organized into **two complementary parts**, both aimed at uncovering structure in learned representations beyond scalar performance metrics.
 
-The goal is to **interpret and compare neural representations**—not via scalar metrics alone, but by studying their **topological organization**.
+The central idea is to study **how information is organized topologically**—across *layers* and *architectures*—using Kepler Mapper.
 
 ---
+
+## Project structure
+
+### Part I — QFormer: Mapper graphs through neural network layers
+
+This part focuses on **intra-model analysis**.
+
+Given a single neural network we:
+- extract activations from **intermediate layers**,
+- construct Mapper graphs at each layer, and
+- study how representation topology evolves **depth-wise**.
+
+**Goal:**  
+Understand how neural networks progressively reshape information as it flows through layers.
+
+---
+
+### Part II — Time Series: Mapper graphs across architectures
+
+This part focuses on **inter-model comparison** for time-series representation learning.
+
+We:
+1. generate **synthetic multivariate time series with controlled anomalies**,  
+2. learn latent representations using different architectures, and  
+3. compare their Mapper graphs to reveal structural differences.
+
+Implemented architectures:
+- LSTM Autoencoder
+- DC-VAE
+- Transformer Autoencoder
+
+**Goal:**  
+Compare how different model families organize temporal patterns and anomalies in latent space.
 
 ## Pipeline at a glance
 
