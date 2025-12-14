@@ -1,187 +1,120 @@
-# Uncovering-Neural-Nets-using-Mapper-Graphs
-=======
-Synthetic Time-Series → Representation Learning → Mapper Graph Viewer
+cat << 'EOF' > README.md
+# Uncovering Neural Networks using Mapper Graphs
 
-This repo generates a synthetic multichannel time series with labeled anomaly segments, trains multiple unsupervised representation models (LSTM-AE, DC-VAE, Transformer-AE), and visualizes the resulting KeplerMapper graphs in an interactive D3 viewer.
+> **Visualizing latent structure in time-series representation learning using Topological Data Analysis**
 
-The viewer supports switching between:
+---
 
-Synthetic (raw-window) features
+## Overview
 
-LSTM latent features
+This repository presents an **end-to-end framework** for:
+1. generating **synthetic multivariate time-series with controlled anomalies**,  
+2. learning **latent representations** using neural autoencoders, and  
+3. analyzing and comparing these representations via **Kepler Mapper graphs**.
+
+The goal is to **interpret and compare neural representations**—not via scalar metrics alone, but by studying their **topological organization**.
 
-DC-VAE latent features
-
-Transformer latent features
-
-…and toggling between PCA vs UMAP layout lenses, plus multiple node color modes.
-
-What you get
-
-A synthetic dataset: synthetic_multidim_ts.csv
-
-Channels: ch0..ch{C-1}
-
-Labels:
-
-label ∈ {0,1} (anomaly vs normal)
-
-type ∈ {0..5} (0=normal; 1..5 anomaly class)
-
-Mapper JSON outputs (consumed by the viewer):
-
-synthetic_mapper_pca_umap.json
-
-mapper_lstm.json
-
-mapper_vae.json
-
-mapper_transf.json
-
-A standalone interactive viewer:
-
-viewer.html + viewer.js 
-
-viewer
-
- 
-
-viewer
-
-1) Synthetic dataset generation
-Anomaly types (label type)
-
-0: Normal
-
-1: Mean shift (persistent offset)
-
-2: Spike (single-point impulse)
-
-3: Variance burst (high-noise interval)
-
-4: Dropout (flatline / zeros on one channel)
-
-5: Regime switch (pattern change on one channel)
-
-Generate dataset
-python synthetic_ts_plot.py
-
-
-This writes:
-
-synthetic_multidim_ts.csv
-
-
-If the CSV already exists, the model pipelines will reuse it.
-
-2) Windowing + feature construction (shared idea across pipelines)
-
-All pipelines segment the multichannel series into overlapping windows:
-
-window_size (default: 200)
-
-stride (default: 20)
-
-Each window has:
-
-Ground-truth summary labels (for visualization only):
-
-anomaly_fraction: fraction of anomalous timesteps within the window
-
-dominant_type: most frequent anomaly type in the window (ignoring type=0)
-
-dominant_channel: channel with highest standard deviation in that window
-
-A learned representation (depends on model):
-
-Synthetic baseline: flattened raw window
-
-LSTM-AE / DC-VAE / Transformer-AE: latent embedding per window
-
-Optional: reconstruction error score per window (used as a color mode)
-
-3) AI models used
-A) LSTM Autoencoder (lstm_mapper_pipeline.py)
-
-Encoder: LSTM → last hidden state → linear projection to latent
-
-Decoder: unfolds a sequence from latent state → linear output to channels
-
-Output per window:
-
-latent vector z
-
-reconstruction MSE (used as “mean_score” in Mapper nodes)
-
-Run:
-
-python lstm_mapper_pipeline.py --out mapper_lstm.json
-
-B) DC-VAE (1D Convolutional VAE) (dcvae_mapper_pipeline.py)
-
-Encoder: Conv1D stack → flattened → μ, logσ²
-
-Latent: reparameterization trick
-
-Decoder: ConvTranspose1D stack back to sequence
-
-Output per window:
-
-latent μ (embedding)
-
-reconstruction error (MSE)
-
-Run:
-
-python dcvae_mapper_pipeline.py --out mapper_vae.json
-
-C) Transformer Autoencoder (trans_mapper_pipeline.py)
-
-Input projection to d_model + sinusoidal positional encoding
-
-TransformerEncoder stacks
-
-Reconstruction from encoder outputs
-
-Latent: mean pooling over time → linear projection
-
-Output per window:
-
-latent embedding
-
-reconstruction MSE
-
-Run:
-
-python trans_mapper_pipeline.py --out mapper_transf.json
-
-4) Mapper graph construction
-
-All pipelines build a KeplerMapper graph from window-level features:
-
-Lens: PCA (2D) for Mapper construction
-
-Additional lens: UMAP (2D) for alternative layout in viewer
-
-Cover: n_cubes and overlap
-
-Clusterer: KMeans (k=3)
-
-Each Mapper node stores:
-
-members: which windows belong to the node
-
-size: member count
-
-pca / umap: mean coordinates of member windows
-
-anomaly_fraction, dominant_type, type_hist
-
-dominant_channel, channel_std
-
-birth_step: earliest window start index
-
-mean_score (for model pipelines): mean reconstruction error across members
+---
+
+## Pipeline at a glance
+
+Synthetic Time Series
+↓
+Sliding Window Segmentation
+↓
+Representation Learning
+(LSTM-AE / DC-VAE / Transformer-AE)
+↓
+Latent Embeddings per Window
+↓
+Kepler Mapper Graph Construction
+↓
+Interactive Graph Visualization (D3)
+
+
+---
+
+## Models implemented
+
+| Model | File | Representation |
+|------|------|---------------|
+| Synthetic baseline | `synthetic_mapper_pipeline.py` | Raw window features |
+| LSTM Autoencoder | `lstm_mapper_pipeline.py` | LSTM latent vectors |
+| DC-VAE | `dcvae_mapper_pipeline.py` | Convolutional VAE latent space |
+| Transformer Autoencoder | `trans_mapper_pipeline.py` | Transformer latent embeddings |
+
+Each model produces a **window-level embedding**, which is then used as input to the Mapper algorithm.
+
+---
+
+## Synthetic dataset
+
+### Dataset
+- File: `synthetic_multidim_ts.csv`
+- Channels: `ch0 … ch{C−1}`
+- Time-indexed multivariate sequence
+
+### Labels
+| Field | Description |
+|-----|------------|
+| `label` | Binary anomaly indicator (0 = normal, 1 = anomaly) |
+| `type` | Anomaly class (0–5) |
+
+### Anomaly types
+| Type | Description |
+|----|------------|
+| 0 | Normal |
+| 1 | Mean shift |
+| 2 | Spike |
+| 3 | Variance burst |
+| 4 | Channel dropout |
+| 5 | Regime change |
+
+---
+
+## Windowing strategy
+
+- Fixed-length sliding windows
+- Configurable window size and stride
+- Each window is annotated with:
+  - anomaly fraction
+  - dominant anomaly type
+  - dominant channel
+  - reconstruction error (for learned models)
+
+These window-level summaries are propagated to Mapper nodes.
+
+---
+
+## Mapper construction
+
+- **Lens**: PCA (primary), UMAP (alternative layout)
+- **Cover**: overlapping hypercubes
+- **Clustering**: K-Means
+- **Node attributes**:
+  - node size
+  - anomaly fraction
+  - anomaly type distribution
+  - dominant channel
+  - reconstruction error statistics
+
+---
+
+## Interactive visualization
+
+The D3-based viewer allows:
+- switching between **model representations**
+- toggling **PCA vs UMAP layouts**
+- coloring nodes by:
+  - anomaly fraction
+  - dominant anomaly type
+  - dominant channel
+  - reconstruction error
+- inspecting node composition interactively
+
+### Launch locally
+```bash
+python -m http.server 8000
 
 5) Run end-to-end
 Install
