@@ -1,4 +1,3 @@
-cat << 'EOF' > README.md
 # Uncovering Neural Networks using Mapper Graphs
 
 > **Visualizing latent structure in time-series representation learning using Topological Data Analysis**
@@ -18,17 +17,12 @@ The goal is to **interpret and compare neural representations**—not via scalar
 
 ## Pipeline at a glance
 
-Synthetic Time Series
-↓
-Sliding Window Segmentation
-↓
+Synthetic Time Series -> 
+Sliding Window Segmentation ->
 Representation Learning
-(LSTM-AE / DC-VAE / Transformer-AE)
-↓
-Latent Embeddings per Window
-↓
-Kepler Mapper Graph Construction
-↓
+(LSTM-AE / DC-VAE / Transformer-AE) ->
+Latent Embeddings per Window ->
+Kepler Mapper Graph Construction ->
 Interactive Graph Visualization (D3)
 
 
